@@ -1,0 +1,21 @@
+class Solution {
+    public int[] plusOne(int[] digits) {
+        int len = digits.length;
+        // 倒叙遍历，从个位数开始加一的操作
+        for (int i = len - 1; i >= 0; i--) {
+            if (digits[i] != 9) {
+                // 如果该位数字不等于 9，直接加 1 然后返回
+                digits[i]++;
+                return digits;
+            }
+            // 如果该位数字位 9，那么直接置为 0 即可
+            digits[i] = 0;
+        }
+
+        // 如果到这还没有返回，那么只有一种情况：每个数字都是 9，因为只要有一个数字不为 9，那么在上面那个 return 就已经返回了
+        digits = new int[len + 1];
+        digits[0] = 1;
+
+        return digits;
+    }
+}
