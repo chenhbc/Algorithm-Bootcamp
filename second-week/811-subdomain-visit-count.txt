@@ -1,0 +1,57 @@
+class Solution {
+    public List<String> subdomainVisits(String[] cpdomains) {
+        List<String> result = new ArrayList();
+
+        // 边界判断
+        if (null == cpdomains || cpdomains.length == 0) return result;
+
+        // 定义一个哈希表，用于存放域名和对应的访问次数
+        Map<String, Integer> visitMap = new HashMap<>();
+
+        for (String cpdomain : cpdomains) {
+            // 分割字符串，获取域名和对应访问次数
+            String[] domainArr = cpdomain.split(" ");
+            Integer count = Integer.valueOf(domainArr[0]);
+            String domain = domainArr[1];
+
+            // 把根域名的访问次数加进来，注意这里不能直接 put，否则可能会导致已有数据被替换掉
+            // visitMap.put(domain, count);
+
+            if (visitMap.containsKey(domain)) {
+                // 如果该域名已经存在 Map 中，则把访问次数加访问次数即可
+                visitMap.put(domain, visitMap.get(domain) + count);
+            } else {
+                // 如果该域名还不存在 Map 中，则把访问次数添加进去即可
+                visitMap.put(domain, count);
+            }
+            // 子域名访问次数
+            getSubdomainCount(visitMap, domain, count);
+        }
+
+        // 遍历 Map，转换为指定格式输出
+        for (Map.Entry<String, Integer> entry : visitMap.entrySet​()) {
+            result.add(entry.getValue() + " " + entry.getKey());
+        }
+        return result;
+    }
+
+    /**
+     * 获取子域名的访问次数，递归调用，由于在本题中说明只有一个或两个"."符号，所以这里最多也就调用两次
+     */
+    private void getSubdomainCount(Map<String, Integer> visitMap, String domain, Integer count) {
+        // 递归终止条件：子域名中已经没有"."符号了
+        if (domain.indexOf(".") < 1) return;
+
+        // 这里需要用 index + 1，否则域名中会有"."存在
+        String subdomain = domain.substring(domain.indexOf(".") + 1);
+        if (visitMap.containsKey(subdomain)) {
+            // 如果该域名已经存在 Map 中，则把访问次数加父域名的访问次数即可
+            visitMap.put(subdomain, visitMap.get(subdomain) + count);
+        } else {
+            // 如果该域名还不存在 Map 中，则是父域名的访问次数
+            visitMap.put(subdomain, count);
+        }
+
+        getSubdomainCount(visitMap, subdomain, count);
+    }
+}

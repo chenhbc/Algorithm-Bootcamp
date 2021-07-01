@@ -1,0 +1,125 @@
+/**
+ * 采用哈希表加双向链表实现
+ * 利用哈希表的快速查询和双向链表的快速修改，可实在 O(1) 时间复杂度内完成
+ */
+class LRUCache {
+
+    private HashMap<Integer, DLinkedNode> cache;
+    private int capacity, count;
+    private DLinkedNode head, tail;
+
+    public LRUCache(int capacity) {
+        cache = new HashMap<>(capacity);
+        this.capacity = capacity;
+
+        // 初始化头尾链表信息，并且关联
+        this.head = new DLinkedNode();
+        this.tail = new DLinkedNode();
+        
+        this.head.prev = null;
+        this.tail.next = null;
+
+        this.head.next = this.tail;
+        this.tail.prev = this.head;
+    }
+    
+    public int get(int key) {
+        DLinkedNode node = cache.get(key);
+        if (null == node) {
+            return -1;
+        }
+
+        // 访问之后，移动到链表头部
+        this.moveToHead(node);
+
+        return node.value;
+    }
+
+    /**
+     * 把节点移动到头部，先移除，然后添加到头部
+     */
+    private void moveToHead(DLinkedNode node) {
+        this.removeNode(node);
+        this.addNode(node);
+    }
+    
+    public void put(int key, int value) {
+        DLinkedNode node = cache.get(key);
+        if (null == node) {
+            // 如果不存在该值，则应插入一个新节点
+            DLinkedNode newNode = new DLinkedNode();
+            newNode.key = key;
+            newNode.value = value;
+
+            // 把新节点加入缓存中
+            cache.put(key, newNode);
+            this.addNode(newNode);
+            this.count++;
+            
+            // 判断容量，如果已达到最大容量，则把链表尾部元素删除
+            if (this.count > this.capacity) {
+                this.removeTail();
+                this.count--;
+            }
+        } else {
+            // 如果存在，则变更数据值，然后移动到头部
+            node.value = value;
+            this.moveToHead(node);
+        }
+    }
+
+    /**
+     * 移除一个节点
+     */
+    private void removeNode(DLinkedNode node) {
+        DLinkedNode prev = node.prev;
+        DLinkedNode next = node.next;
+
+        prev.next = next;
+        next.prev = prev;
+    }
+
+    /**
+     * 把一个节点加入双向链表的头部
+     */
+    private void addNode(DLinkedNode node) {
+        // 当前第一个节点
+        DLinkedNode first = this.head.next;
+
+        // 把节点挂在 head 节点后面
+        node.prev = this.head;
+        this.head.next = node;
+        
+        // 把节点挂在 first 节点的前面
+        node.next = first;
+        first.prev = node;
+    }
+
+    /**
+     * 移除尾部元素
+     */
+    private void removeTail() {
+        DLinkedNode node = this.tail.prev;
+        this.removeNode(node);
+
+        // 从哈希表中移除
+        this.cache.remove(node.key);
+    }
+}
+
+/**
+ * 双向链表
+ */
+class DLinkedNode {
+    public int key;
+    public int value;
+    public DLinkedNode prev;
+    public DLinkedNode next;
+}
+
+/**
+ * Your LRUCache object will be instantiated and called as such:
+ * LRUCache obj = new LRUCache(capacity);
+ * int param_1 = obj.get(key);
+ * obj.put(key,value);
+ */
